@@ -10,13 +10,12 @@ def create_csvs():
     test = []
 
     for myclass, directory in enumerate(action_classes):
-        for filename in glob.glob('Data/{}/*.avi'.format(directory)):
-            group = ((filename.split('/')[-1]).split('.')[0]).split('_')[-2]
+        for filename in glob.glob('data/train/{}/*.avi'.format(directory)):
+            train.append([filename, myclass, directory])
 
-            if group in ['g01', 'g02', 'g02', 'g04', 'g05']:
-                test.append([filename, myclass, directory])
-            else:
-                train.append([filename, myclass, directory])
+    for myclass, directory in enumerate(action_classes):
+        for filename in glob.glob('data/test/{}/*.avi'.format(directory)):
+            test.append([filename, myclass, directory])
 
     shuffle(train)
     shuffle(test)

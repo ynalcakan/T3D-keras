@@ -17,9 +17,9 @@ FRAMES_PER_VIDEO = 20
 FRAME_HEIGHT = 256
 FRAME_WIDTH = 256
 FRAME_CHANNEL = 3
-NUM_CLASSES = 50
-BATCH_SIZE = 5
-EPOCHS = 200
+NUM_CLASSES = 2
+BATCH_SIZE = 2
+EPOCHS = 10
 MODEL_FILE_NAME = 'T3D_saved_model.h5'
 
 
@@ -55,7 +55,7 @@ def train():
     optim = Adam(lr=1e-4, decay=1e-6)
     #optim = SGD(lr = 0.1, momentum=0.9, decay=1e-4, nesterov=True)
     model.compile(optimizer=optim, loss='categorical_crossentropy', metrics=['accuracy'])
-    
+
     if os.path.exists('./T3D_saved_model_weights.hdf5'):
         print('Pre-existing model weights found, loading weights.......')
         model.load_weights('./T3D_saved_model_weights.hdf5')
@@ -75,7 +75,7 @@ def train():
         validation_steps=val_steps,
         verbose=1,
         callbacks=callbacks_list,
-        workers=1
+        workers=4
     )
     model.save(MODEL_FILE_NAME)
 
