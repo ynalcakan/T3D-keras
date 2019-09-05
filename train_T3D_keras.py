@@ -3,17 +3,18 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau, TensorBoard
 from keras.optimizers import Adam, SGD
 import keras.backend as K
 import traceback
 
-from T3D_keras import densenet161_3D_DropOut, densenet121_3D_DropOut
+from T3D_keras import densenet161_3D_DropOut, densenet121_3D_DropOut, densenet201_3D_Dropout
 from get_video import video_gen
+import time, datetime
 
 # there is a minimum number of frames that the network must have, values below 10 gives -- ValueError: Negative dimension size caused by subtracting 3 from 2 for 'conv3d_7/convolution'
 # paper uses 224x224, but in that case also the above error occurs
-FRAMES_PER_VIDEO = 20
+FRAMES_PER_VIDEO = 32  # old value:20
 FRAME_HEIGHT = 256
 FRAME_WIDTH = 256
 FRAME_CHANNEL = 3
@@ -41,6 +42,7 @@ def train():
     # Get Model
     # model = densenet121_3D_DropOut(sample_input.shape, nb_classes)
     model = densenet161_3D_DropOut(sample_input.shape, nb_classes)
+    # model = densenet201_3D_Dropout(sample_input.shape, nb_classes)
 
     checkpoint = ModelCheckpoint('T3D_saved_model_weights.hdf5', monitor='val_loss',
                                  verbose=1, save_best_only=True, mode='min', save_weights_only=True)
@@ -49,7 +51,8 @@ def train():
                                        patience=20,
                                        verbose=1, mode='min', min_delta=0.0001, cooldown=2, min_lr=1e-6)
 
-    callbacks_list = [checkpoint, reduceLROnPlat, earlyStop]
+    tensorboard = TensorBoard(log_dir="./logs/{}/{}epochs_{}fpv_{}".format(model.name, EPOCHS, FRAMES_PER_VIDEO, datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    callbacks_list = [checkpoint, reduceLROnPlat, earlyStop, tensorboard]
 
     # compile model
     optim = Adam(lr=1e-4, decay=1e-6)
@@ -75,7 +78,7 @@ def train():
         validation_steps=val_steps,
         verbose=1,
         callbacks=callbacks_list,
-        workers=4
+        workers=1
     )
     model.save(MODEL_FILE_NAME)
 
