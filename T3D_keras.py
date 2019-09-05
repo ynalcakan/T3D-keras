@@ -4,7 +4,7 @@ from keras.layers import Input, BatchNormalization, Activation, Conv3D, Dropout,
 from keras.activations import linear, softmax
 from keras.applications import densenet
 
-__all__ = ['DenseNet', 'densenet121', 'densenet161']  # with DropOut
+__all__ = ['DenseNet', 'densenet121', 'densenet161', 'densenet201']  # with DropOut
 
 
 def _DenseLayer(prev_layer, growth_rate, bn_size, drop_rate):
@@ -149,7 +149,8 @@ def DenseNet3D(input_shape, growth_rate=32, block_config=(6, 12, 24, 16),
 # the below model has the lowest Top-1 error in ImageNet Data Set:
 def densenet161_3D_DropOut(input_shape, nb_classes):
     model = DenseNet3D(input_shape, growth_rate=48, block_config=(
-        6, 12, 36, 24), num_init_features=96, drop_rate=0.6, num_classes=nb_classes)
+        6, 12, 36, 24), num_init_features=96, drop_rate=0.5, num_classes=nb_classes)
+    model.name= "densenet161_3D_DropOut"
     return model
 
 
@@ -157,5 +158,14 @@ def densenet121_3D_DropOut(input_shape, nb_classes):
     """Constructs a DenseNet-121_DropOut model.
     """
     model = DenseNet3D(input_shape, num_init_features=64, growth_rate=32,
-                       block_config=(6, 12, 24, 16), drop_rate=0.6, num_classes=nb_classes)
+                       block_config=(6, 12, 24, 16), drop_rate=0.5, num_classes=nb_classes)
+    model.name= "densenet121_3D_DropOut"
+    return model
+
+def densenet201_3D_Dropout(input_shape, nb_classes):
+    """Constructs a DenseNet-201_DropOut model.
+    """
+    model = DenseNet3D(input_shape, num_init_features=64, growth_rate=32,
+                       block_config=(6, 12, 48, 12), drop_rate=0.5, num_classes=nb_classes)
+    model.name= "densenet201_3D_DropOut"
     return model
