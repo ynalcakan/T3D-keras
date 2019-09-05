@@ -28,10 +28,18 @@ def get_video_frames(src, fpv, frame_height, frame_width):
 
     rnd_idx = random.randint(5,len(frames)-5)
     rnd_frame = frames[rnd_idx]
-    rnd_frame = cv2.resize(rnd_frame,(224,224)) #Needed for Densenet121-2d
+    rnd_frame = cv2.resize(rnd_frame,(224,224)) # Needed for Densenet121-2d
 
     # Return fpv=10 frames
     step = len(frames)//fpv
+
+    # get 16 frames from each half
+    #frames_fhalf = frames[:len(frames)//2]
+    #avg_frames_fhalf = frames_fhalf[::step]
+    #frames_shalf = frames[len(frames)//2:]
+    #avg_frames_shalf = frames_shalf[::step]
+    #avg_frames = avg_frames_fhalf + avg_frames_shalf
+
     avg_frames = frames[::step]
     avg_frames = avg_frames[:fpv]
     avg_resized_frames = []
@@ -42,10 +50,10 @@ def get_video_frames(src, fpv, frame_height, frame_width):
 
 
 def get_video_and_label(index, data, frames_per_video, frame_height, frame_width):
-    # Read clip and appropiately send the sports' class
+    # Read clip and appropiately send the behavior class
     frame, clip = get_video_frames(os.path.join(
         ROOT_PATH, data['path'].values[index].strip()), frames_per_video, frame_height, frame_width)
-    sport_class = data['class'].values[index]
+    behavior_class = data['class'].values[index]
 
     frame = np.expand_dims(frame, axis=0)
     clip = np.expand_dims(clip, axis=0)
@@ -54,13 +62,14 @@ def get_video_and_label(index, data, frames_per_video, frame_height, frame_width
     # print('Clip shape',clip.shape)
 
 
-    return frame, clip, sport_class
+    return frame, clip, behavior_class
 
 
 def video_gen(data, frames_per_video, frame_height, frame_width, channels, num_classes, batch_size=4):
     while True:
         # Randomize the indices to make an array
         indices_arr = np.random.permutation(data.count()[0])
+
         for batch in range(0, len(indices_arr), batch_size):
             # slice out the current batch according to batch-size
             current_batch = indices_arr[batch:(batch + batch_size)]
@@ -73,14 +82,14 @@ def video_gen(data, frames_per_video, frame_height, frame_width, channels, num_c
 
             for i in current_batch:
                 # get frames and its corresponding color for an traffic light
-                single_frame, single_clip, sport_class = get_video_and_label(
+                single_frame, single_clip, behavior_class = get_video_and_label(
                     i, data, frames_per_video, frame_height, frame_width)
 
                 # Appending them to existing batch
                 frame = np.append(frame, single_frame, axis=0)
                 clip = np.append(clip, single_clip, axis=0)
 
-                y_train = np.append(y_train, [sport_class])
+                y_train = np.append(y_train, [behavior_class])
             y_train = to_categorical(y_train, num_classes=num_classes)
 
             yield ([frame, clip], y_train)
