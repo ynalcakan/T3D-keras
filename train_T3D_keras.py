@@ -78,7 +78,8 @@ def train():
         validation_steps=val_steps,
         verbose=1,
         callbacks=callbacks_list,
-        workers=1
+        use_multiprocessing=True,
+        workers=2
     )
     model.save(MODEL_FILE_NAME)
 
